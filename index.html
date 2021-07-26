@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+
+    <div class="" id="app">
+
+        <header-component nama="vue js" gambar="./img/1.jpeg"></header-component>
+
+        <nav>
+            <router-link to="/">Home</router-link>
+            <router-link to="/about">About</router-link>
+            <router-link to="/kelas">Kelas</router-link>
+        </nav>
+
+        <main>
+            <router-view v-bind:items="kelas" v-on:submit-kelas="submit" v-on:hapus-kelas="hapusKelas"></router-view>
+            <!-- <home></home> -->
+            <!-- <kelas v-bind:items=" kelas" v-on:submit-kelas="submit" v-on:hapus-kelas="hapusKelas">
+                </kelas> -->
+        </main>
+
+        <footer-component>
+            <p>Copyright 2021</p>
+        </footer-component>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+    <script src="https://unpkg.com/uuid@latest/dist/umd/uuidv4.min.js"></script>
+    <script>
+        const Home = {
+            template: `<div>
+                <h1>Hai Dunia</h1>
+            </div>`
+        }
+        const About = {
+            template: `<div>
+                <h1>About</h1>
+            </div>`
+        }
+        const Kelas = {
+            props: ['items'],
+            template:
+                `
+            <div>
+                <p>Daftar kelas {{ items.length}}</p>
+                <h1>Form</h1>
+                <p>
+                    <form v-on:submit.prevent="submitKelas">
+                        <div class="form-group">
+                            <label for="">Nama Buku</label>
+                            <input type="text" v-model="kelas.judul">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Deskripsi</label>
+                            <textarea v-model="kelas.dekripsi"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Gambar</label>
+                            <input type="file">
+                        </div>
+                        <button type="submit">Tambah</button>
+                    </form>
+                    <template v-if="items.length">
+                    <ul>
+                        <li v-for="(k, index) in items">
+                            {{ index+1 }} - {{k.judul}}
+                            <a href="" v-on:click.prevent="$emit('hapus-kelas', k.id)">Hapus</a>
+                        </li>
+                    </ul>
+                </template>
+                <li v-else>Kelas Belum Tersedia</li>
+            </div>
+            `,
+            data: function () {
+                return {
+                    kelas: {
+                        judul: '',
+                        dekripsi: '',
+                        img: '',
+                    }
+                }
+            },
+            methods: {
+                submitKelas: function () {
+                    // kita jabarkan dlu
+                    const data = {
+                        id: uuidv4(),
+                        judul: this.kelas.judul,
+                        dekripsi: this.kelas.dekripsi,
+                        gambar: null
+                    }
+                    // untuk berbicara dengan parent lalu kirim datanya juga
+                    this.$emit('submit-kelas', data)
+                    this.kelas.judul = ""
+                    this.kelas.dekripsi = ""
+                }
+            }
+        }
+        Vue.component('header-component', {
+            template: `
+            <header>
+                <img :src="gambar" alt="" width="300px">
+                <p v-text='pesan'></p>
+                <p >{{ 'hello ' + nama}}</p>
+            </header>
+            `,
+            props: ['nama', 'gambar'],
+            data: function () {
+                return {
+                    pesan: 'hello, component',
+                }
+            }
+        })
+
+        Vue.component('footer-component', {
+            template: `
+            <footer id="footer">
+                <slot></slot>
+            </footer>
+            `
+        })
+
+        const routes = [
+            { path: '/', component: Home },
+            { path: '/about', component: About },
+            { path: '/kelas', component: Kelas }
+        ]
+
+        // inisiasi lalu simpan ke routes
+        const router = new VueRouter({
+            mode: 'history',
+            routes // short for `routes: routes`
+        })
+
+        const vm = new Vue({
+            el: '#app',
+            // lalu kita aktif kan ke dalam vue
+            router,
+            components: {
+                'home': Home,
+            },
+            data: {
+                kelas: [
+                    {
+                        id: '1', judul: "aku bukanlah bodoh", dekripsi: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium repellat impedit unde rem explicabo architecto quia minima est illum! Maxime veniam mollitia corporis ratione nulla, quam eum velit consectetur ipsum explicabo quis deleniti recusandae laboriosam hic autem, cum soluta alias aspernatur laborum delectus rem voluptas! Dolorum cupiditate est dignissimos vero?', gambar: '1.jpg'
+                    },
+                    {
+                        id: '2', judul: "aku Pintar", dekripsi: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium repellat impedit unde rem explicabo architecto quia minima est illum! Maxime veniam mollitia corporis ratione nulla, quam eum velit consectetur ipsum explicabo quis deleniti recusandae laboriosam hic autem, cum soluta alias aspernatur laborum delectus rem voluptas! Dolorum cupiditate est dignissimos vero?', gambar: 'wahyu.jpg'
+                    }
+                ],
+            },
+            methods: {
+                hapusKelas: function (id) {
+                    // console.log(id)
+                    // this.kelas.splice(id, 1);
+                    // filter cek berkali kali jika id true maka kelas tersebut masih tersimpan
+                    // jika id salah maka id nya sama jdi kelasnya akan di hapus 
+                    this.kelas = this.kelas.filter(item => item.id != id)
+                },
+                submit: function (data) {
+                    // kita jabarkan datanya
+                    this.kelas.unshift(data)
+                },
+            },
+            computed: {
+            }
+        })
+    </script>
+</body>
+
+</html>
